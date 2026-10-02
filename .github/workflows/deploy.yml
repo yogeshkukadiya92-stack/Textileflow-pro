@@ -1,0 +1,49 @@
+name: Production CI & Auto-Deploy to Coolify
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  build-and-validate:
+    name: Build & Validate Bundle
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+
+      - name: Install Dependencies
+        run: npm ci
+
+      - name: Verify TypeScript & Build
+        run: npm run build
+
+  deploy-to-coolify:
+    name: Auto-Deploy to Coolify
+    needs: build-and-validate
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
+    steps:
+      - name: Ping Coolify Webhook
+        env:
+          COOLIFY_WEBHOOK: ${{ secrets.COOLIFY_WEBHOOK }}
+        run: |
+          if [ -n "$COOLIFY_WEBHOOK" ]; then
+            echo "🚀 Triggering Coolify Auto-Deploy..."
+            RESPONSE=$(curl -s -w "\nHTTP_STATUS:%{http_code}" -X POST "$COOLIFY_WEBHOOK" || curl -s -w "\nHTTP_STATUS:%{http_code}" -X GET "$COOLIFY_WEBHOOK")
+            echo "Response: $RESPONSE"
+            echo "✅ Auto-deploy triggered successfully on Coolify!"
+          else
+            echo "ℹ️ COOLIFY_WEBHOOK secret is not set in GitHub repository settings."
+            echo "If you have added GitHub Webhook in Coolify or connected GitHub App, Coolify deploys automatically on push."
+          fi
