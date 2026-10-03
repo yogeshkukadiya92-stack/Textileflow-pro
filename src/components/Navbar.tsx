@@ -10,22 +10,29 @@ import {
   RotateCcw,
   SlidersHorizontal,
   ChevronDown,
-  Layers
+  Layers,
+  Menu,
+  X,
+  Languages,
+  Globe
 } from 'lucide-react';
 
 export const Navbar: React.FC = () => {
   const { 
     role, 
     setRole, 
+    lang,
+    setLang,
     searchQuery, 
     setSearchQuery, 
+    isMobileNavOpen,
+    setIsMobileNavOpen,
     runSection22Demo, 
     resetToDefaults,
     setActiveTab,
-    auditLogs
+    auditLogs,
+    triggerToast
   } = useTextile();
-
-  const [showMenu, setShowMenu] = useState<boolean>(false);
 
   const rolesList: { id: UserRole; name: string }[] = [
     { id: 'owner_admin', name: 'Owner / Executive Admin' },
@@ -50,6 +57,16 @@ export const Navbar: React.FC = () => {
       zIndex: 100,
       borderRadius: 'var(--radius-lg)'
     }}>
+      {/* Mobile Hamburger Button */}
+      <button
+        onClick={() => setIsMobileNavOpen(!isMobileNavOpen)}
+        className="btn-secondary mobile-only"
+        style={{ padding: '6px', height: '36px', width: '36px', alignItems: 'center', justifyContent: 'center' }}
+        title="Toggle Menu"
+      >
+        {isMobileNavOpen ? <X size={18} color="var(--accent-gold)" /> : <Menu size={18} color="var(--accent-gold)" />}
+      </button>
+
       {/* Brand */}
       <div 
         onClick={() => setActiveTab('dashboard')} 
@@ -89,6 +106,7 @@ export const Navbar: React.FC = () => {
           className="input-field"
           style={{ 
             paddingLeft: '34px', 
+            paddingRight: searchQuery ? '32px' : '12px',
             height: '36px', 
             borderRadius: 'var(--radius-full)',
             background: 'rgba(15, 23, 42, 0.5)',
@@ -96,11 +114,55 @@ export const Navbar: React.FC = () => {
             fontSize: '0.82rem'
           }}
         />
+        {searchQuery && (
+          <button 
+            onClick={() => setSearchQuery('')}
+            style={{ 
+              position: 'absolute', 
+              right: '10px', 
+              top: '50%', 
+              transform: 'translateY(-50%)', 
+              background: 'transparent', 
+              border: 'none', 
+              color: 'var(--text-muted)', 
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center'
+            }}
+          >
+            <X size={14} />
+          </button>
+        )}
       </div>
 
       {/* Right Controls */}
       <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexShrink: 0 }}>
         
+        {/* Language Switcher Pill */}
+        <button
+          onClick={() => {
+            const nextLang = lang === 'en' ? 'gu' : 'en';
+            setLang(nextLang);
+            triggerToast(nextLang === 'gu' ? 'ગુજરાતી ભાષા પસંદ થઈ' : 'Language set to English', 'info');
+          }}
+          className="btn-secondary"
+          style={{
+            padding: '4px 9px',
+            height: '34px',
+            fontSize: '0.74rem',
+            fontWeight: 700,
+            borderRadius: 'var(--radius-md)',
+            background: lang === 'gu' ? 'rgba(245, 158, 11, 0.15)' : 'rgba(255, 255, 255, 0.04)',
+            border: lang === 'gu' ? '1px solid var(--accent-gold)' : '1px solid var(--border-medium)',
+            color: lang === 'gu' ? 'var(--accent-gold)' : '#cbd5e1'
+          }}
+          title="Toggle Language / ભાષા બદલો"
+        >
+          <Globe size={13} />
+          <span>{lang === 'en' ? 'EN' : 'ગુજરાતી'}</span>
+        </button>
+
         {/* Role Selector Pill */}
         <div style={{ position: 'relative' }}>
           <select 

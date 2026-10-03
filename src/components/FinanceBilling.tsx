@@ -56,10 +56,28 @@ export const FinanceBilling: React.FC = () => {
     setShowPaymentModal(false);
   };
 
-  // Calculations
+  // Calculations & Filtering
+  const filteredInvoices = invoices.filter(inv => 
+    inv.invoiceNumber.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    inv.customerName.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    inv.orderNumber.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    (inv.irnNumber && inv.irnNumber.toLowerCase().includes(searchQuery.toLowerCase()))
+  );
+
+  const filteredPayments = payments.filter(p =>
+    p.receiptNumber.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    p.customerName.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    p.bankRef.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    p.paymentMode.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+
   const totalBilled = invoices.reduce((s, i) => s + i.grandTotal, 0);
   const totalReceived = payments.reduce((s, p) => s + p.amount, 0);
   const totalOutstanding = invoices.reduce((s, i) => s + i.balanceDue, 0);
+  const totalSubtotal = invoices.reduce((s, i) => s + i.subtotal, 0);
+  const totalCogs = invoices.reduce((s, i) => s + i.cogsAmount, 0);
+  const totalProfit = totalSubtotal - totalCogs;
+  const overallMarginPercent = totalSubtotal > 0 ? (totalProfit / totalSubtotal) * 100 : 25;
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
@@ -123,7 +141,7 @@ export const FinanceBilling: React.FC = () => {
           </div>
           <div>
             <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', fontWeight: 600 }}>Realized Gross Margin</div>
-            <div style={{ fontSize: '1.4rem', fontWeight: 800, color: 'var(--accent-gold)' }}>25.0% Net</div>
+            <div className="font-display" style={{ fontSize: '1.4rem', fontWeight: 800, color: 'var(--accent-gold)' }}>{overallMarginPercent.toFixed(1)}% Net</div>
           </div>
         </div>
       </div>
@@ -203,7 +221,12 @@ export const FinanceBilling: React.FC = () => {
       {/* Invoices List */}
       {subTab === 'invoices' && (
         <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-          {invoices.map(inv => (
+          {filteredInvoices.length === 0 ? (
+            <div className="glass-panel" style={{ padding: '36px', textAlign: 'center', color: 'var(--text-muted)' }}>
+              No tax invoices match your filter or search query.
+            </div>
+          ) : (
+            filteredInvoices.map(inv => (
             <div key={inv.id} className="glass-panel" style={{ padding: '24px' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '12px', marginBottom: '14px' }}>
                 <div>
@@ -295,7 +318,7 @@ export const FinanceBilling: React.FC = () => {
               </div>
 
             </div>
-          ))}
+          )))}
         </div>
       )}
 
@@ -454,7 +477,12 @@ export const FinanceBilling: React.FC = () => {
       {/* Payment Receipts */}
       {subTab === 'receipts' && (
         <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-          {payments.map(pay => (
+          {filteredPayments.length === 0 ? (
+            <div className="glass-panel" style={{ padding: '36px', textAlign: 'center', color: 'var(--text-muted)' }}>
+              No payment receipts match your search.
+            </div>
+          ) : (
+            filteredPayments.map(pay => (
             <div key={pay.id} className="glass-panel" style={{ padding: '20px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '12px' }}>
               <div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
@@ -479,7 +507,7 @@ export const FinanceBilling: React.FC = () => {
                 </div>
               </div>
             </div>
-          ))}
+          )))}
         </div>
       )}
 
@@ -619,7 +647,15 @@ export const FinanceBilling: React.FC = () => {
                 </label>
                 <select 
                   value={payCustomerId} 
-                  onChange={(e) => setPayCustomerId(e.target.value)} 
+                  onChange={(e) => {
+                    const custId = e.target.value;
+                    setPayCustomerId(custId);
+                    const custInvoices = invoices.filter(i => i.customerId === custId && i.balanceDue > 0);
+                    if (custInvoices.length > 0) {
+                      setPayInvoiceNo(custInvoices[0].invoiceNumber);
+                      setPayAmount(custInvoices[0].balanceDue);
+                    }
+                  }} 
                   className="input-field" 
                   style={{ marginTop: '4px' }}
                 >
@@ -645,7 +681,7 @@ export const FinanceBilling: React.FC = () => {
                 >
                   {invoices.map(i => (
                     <option key={i.id} value={i.invoiceNumber}>
-                      {i.invoiceNumber} — Balance Due: ₹{i.balanceDue.toLocaleString('en-IN')}
+                      {i.invoiceNumber} — {i.customerName} (Due: ₹{i.balanceDue.toLocaleString('en-IN')})
                     </option>
                   ))}
                 </select>

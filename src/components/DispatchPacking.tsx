@@ -23,10 +23,20 @@ export const DispatchPacking: React.FC = () => {
   const [showNewDispatchModal, setShowNewDispatchModal] = useState<boolean>(false);
   const [viewingLabel, setViewingLabel] = useState<DispatchType | null>(null);
 
+  // Unfulfilled orders eligible for packing and dispatch
+  const unfulfilledOrders = salesOrders.filter(so => so.status !== 'Fulfilled' && so.status !== 'Cancelled');
+
   // New Dispatch states
-  const [selectedOrderId, setSelectedOrderId] = useState<string>(salesOrders[0]?.id || '');
+  const [selectedOrderId, setSelectedOrderId] = useState<string>(unfulfilledOrders[0]?.id || '');
   const [transporter, setTransporter] = useState<string>('VRL Logistics (Surat - Mumbai Fast Track)');
   const [lrNo, setLrNo] = useState<string>('VRL-SUR-994202');
+
+  const handleOpenDispatchModal = () => {
+    if (unfulfilledOrders.length > 0 && (!selectedOrderId || !unfulfilledOrders.some(o => o.id === selectedOrderId))) {
+      setSelectedOrderId(unfulfilledOrders[0].id);
+    }
+    setShowNewDispatchModal(true);
+  };
 
   const handleDispatch = () => {
     if (!selectedOrderId) {
@@ -53,7 +63,7 @@ export const DispatchPacking: React.FC = () => {
 
         <div style={{ display: 'flex', gap: '10px' }}>
           {(role === 'owner_admin' || role === 'dispatch') && (
-            <button onClick={() => setShowNewDispatchModal(true)} className="btn-primary" style={{ fontSize: '0.8rem', padding: '6px 14px' }}>
+            <button onClick={handleOpenDispatchModal} className="btn-primary" style={{ fontSize: '0.8rem', padding: '6px 14px' }}>
               <Plus size={15} />
               <span>New Dispatch</span>
             </button>
@@ -224,18 +234,24 @@ export const DispatchPacking: React.FC = () => {
                 <label style={{ fontSize: '0.78rem', color: 'var(--text-muted)', fontWeight: 700 }}>
                   Select Pending Sales Order:
                 </label>
-                <select 
-                  value={selectedOrderId} 
-                  onChange={(e) => setSelectedOrderId(e.target.value)} 
-                  className="input-field" 
-                  style={{ marginTop: '4px' }}
-                >
-                  {salesOrders.filter(so => so.status !== 'Fulfilled' && so.status !== 'Cancelled').map(so => (
-                    <option key={so.id} value={so.id}>
-                      {so.orderNumber} — {so.customerName} ({so.items.reduce((s, it) => s + it.quantity, 0)} sets)
-                    </option>
-                  ))}
-                </select>
+                {unfulfilledOrders.length === 0 ? (
+                  <div style={{ marginTop: '6px', padding: '10px 14px', borderRadius: 'var(--radius-sm)', background: 'rgba(245, 158, 11, 0.1)', border: '1px solid rgba(245, 158, 11, 0.3)', color: '#fbbf24', fontSize: '0.8rem' }}>
+                    All current sales orders are already fulfilled and dispatched! Create a new order first from Sales Orders.
+                  </div>
+                ) : (
+                  <select 
+                    value={selectedOrderId} 
+                    onChange={(e) => setSelectedOrderId(e.target.value)} 
+                    className="input-field" 
+                    style={{ marginTop: '4px' }}
+                  >
+                    {unfulfilledOrders.map(so => (
+                      <option key={so.id} value={so.id}>
+                        {so.orderNumber} — {so.customerName} ({so.items.reduce((s, it) => s + it.quantity, 0)} sets)
+                      </option>
+                    ))}
+                  </select>
+                )}
               </div>
 
               <div>
@@ -276,7 +292,12 @@ export const DispatchPacking: React.FC = () => {
                 <button onClick={() => setShowNewDispatchModal(false)} className="btn-secondary">
                   Cancel
                 </button>
-                <button onClick={handleDispatch} className="btn-emerald">
+                <button 
+                  onClick={handleDispatch} 
+                  disabled={unfulfilledOrders.length === 0}
+                  className="btn-emerald"
+                  style={{ opacity: unfulfilledOrders.length === 0 ? 0.5 : 1, cursor: unfulfilledOrders.length === 0 ? 'not-allowed' : 'pointer' }}
+                >
                   <Truck size={14} />
                   <span>Confirm Dispatch & Generate Bale Labels</span>
                 </button>

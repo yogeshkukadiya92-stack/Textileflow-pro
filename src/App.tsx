@@ -17,7 +17,7 @@ import { AuditTrail } from './components/AuditTrail';
 import { ToastContainer } from './components/ToastContainer';
 
 export const AppContent: React.FC = () => {
-  const { activeTab } = useTextile();
+  const { activeTab, isMobileNavOpen, setIsMobileNavOpen } = useTextile();
 
   const renderActiveTab = () => {
     switch (activeTab) {
@@ -55,6 +55,32 @@ export const AppContent: React.FC = () => {
       <Navbar />
       <ToastContainer />
 
+      {/* Mobile Backdrop & Drawer */}
+      {isMobileNavOpen && (
+        <div 
+          className="mobile-nav-backdrop mobile-only" 
+          onClick={() => setIsMobileNavOpen(false)}
+        />
+      )}
+      <div className={`mobile-nav-drawer ${isMobileNavOpen ? 'open' : ''} mobile-only`}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '14px', paddingBottom: '10px', borderBottom: '1px solid var(--border-subtle)' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <span>🧵</span>
+            <span className="font-display" style={{ fontWeight: 800, fontSize: '1rem', color: '#f8fafc' }}>
+              Textile<span className="text-gradient-gold">Flow</span>
+            </span>
+          </div>
+          <button 
+            onClick={() => setIsMobileNavOpen(false)}
+            className="btn-secondary" 
+            style={{ padding: '3px 8px', fontSize: '0.75rem', borderRadius: '4px' }}
+          >
+            ✕
+          </button>
+        </div>
+        <Sidebar />
+      </div>
+
       <div style={{
         display: 'flex',
         flex: 1,
@@ -65,7 +91,9 @@ export const AppContent: React.FC = () => {
         gap: '20px',
         alignItems: 'flex-start'
       }}>
-        <Sidebar />
+        <div className="desktop-only">
+          <Sidebar />
+        </div>
 
         <main style={{
           flex: 1,

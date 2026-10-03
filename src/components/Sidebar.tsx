@@ -27,34 +27,34 @@ interface MenuGroup {
 }
 
 export const Sidebar: React.FC = () => {
-  const { activeTab, setActiveTab, role } = useTextile();
+  const { activeTab, setActiveTab, role, t, lang, setIsMobileNavOpen } = useTextile();
 
   const menuGroups: MenuGroup[] = [
     {
-      group: 'WORKSPACE',
+      group: lang === 'gu' ? 'વર્કસ્પેસ' : 'WORKSPACE',
       items: [
-        { id: 'dashboard', icon: LayoutDashboard, label: 'Dashboard' },
-        { id: 'walkthrough', icon: Calculator, label: 'Section 22 Proof', badge: 'LH-101' },
-        { id: 'designs', icon: Palette, label: 'Designs & Samples' }
+        { id: 'dashboard', icon: LayoutDashboard, label: t('nav_dashboard') || 'Dashboard' },
+        { id: 'walkthrough', icon: Calculator, label: t('nav_walkthrough') || 'Section 22 Proof', badge: 'LH-101' },
+        { id: 'designs', icon: Palette, label: t('nav_designs') || 'Designs & Samples' }
       ]
     },
     {
-      group: 'PRODUCTION & SUPPLY',
+      group: lang === 'gu' ? 'ઉત્પાદન અને ખરીદી' : 'PRODUCTION & SUPPLY',
       items: [
-        { id: 'khatas', icon: Users, label: 'Khatas & PO' },
-        { id: 'jobwork', icon: Scissors, label: 'Jobwork & Challans' },
-        { id: 'qc', icon: CheckCircle2, label: 'Inward & QC' },
-        { id: 'inventory', icon: Boxes, label: 'Stock & Allocation' }
+        { id: 'khatas', icon: Users, label: t('nav_khata') || 'Khatas & PO' },
+        { id: 'jobwork', icon: Scissors, label: t('nav_jobwork') || 'Jobwork & Challans' },
+        { id: 'qc', icon: CheckCircle2, label: t('nav_qc') || 'Inward & QC' },
+        { id: 'inventory', icon: Boxes, label: t('nav_stock') || 'Stock & Allocation' }
       ]
     },
     {
-      group: 'SALES & ACCOUNTING',
+      group: lang === 'gu' ? 'વેચાણ અને હિસાબ' : 'SALES & ACCOUNTING',
       items: [
-        { id: 'sales', icon: ShoppingCart, label: 'Sales Orders' },
-        { id: 'dispatch', icon: Truck, label: 'Dispatch & Packing' },
-        { id: 'finance', icon: Receipt, label: 'Finance & Invoicing' },
-        { id: 'whatsapp', icon: MessageSquare, label: 'WhatsApp & AI' },
-        { id: 'audit', icon: ShieldAlert, label: 'Audit Trail' }
+        { id: 'sales', icon: ShoppingCart, label: t('nav_orders') || 'Sales Orders' },
+        { id: 'dispatch', icon: Truck, label: t('nav_dispatch') || 'Dispatch & Packing' },
+        { id: 'finance', icon: Receipt, label: t('nav_finance') || 'Finance & Invoicing' },
+        { id: 'whatsapp', icon: MessageSquare, label: t('nav_whatsapp') || 'WhatsApp & AI' },
+        { id: 'audit', icon: ShieldAlert, label: t('nav_audit') || 'Audit Trail' }
       ]
     }
   ];
@@ -94,7 +94,10 @@ export const Sidebar: React.FC = () => {
               return (
                 <button
                   key={item.id}
-                  onClick={() => setActiveTab(item.id)}
+                  onClick={() => {
+                    setActiveTab(item.id);
+                    setIsMobileNavOpen(false);
+                  }}
                   style={{
                     display: 'flex',
                     alignItems: 'center',

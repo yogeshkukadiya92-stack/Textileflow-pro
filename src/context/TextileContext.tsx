@@ -40,6 +40,8 @@ interface TextileContextType {
   setActiveTab: (t: string) => void;
   searchQuery: string;
   setSearchQuery: (q: string) => void;
+  isMobileNavOpen: boolean;
+  setIsMobileNavOpen: (open: boolean) => void;
 
   designs: DesignItem[];
   khatas: KhataParty[];
@@ -183,6 +185,7 @@ export const TextileProvider: React.FC<{ children: React.ReactNode }> = ({ child
   const [lang, setLang] = useState<Language>('en'); // 100% English professional default
   const [activeTab, setActiveTab] = useState<string>('dashboard');
   const [searchQuery, setSearchQuery] = useState<string>('');
+  const [isMobileNavOpen, setIsMobileNavOpen] = useState<boolean>(false);
   const [toasts, setToasts] = useState<ToastMessage[]>([]);
 
   // Persistent States
@@ -886,6 +889,8 @@ export const TextileProvider: React.FC<{ children: React.ReactNode }> = ({ child
       setActiveTab,
       searchQuery,
       setSearchQuery,
+      isMobileNavOpen,
+      setIsMobileNavOpen,
       designs,
       khatas,
       purchaseOrders,
